@@ -1,132 +1,143 @@
+<?php
+session_start();
+
+include("db.php");
+
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $firstname = $_POST['fname'];
+    $lastname = $_POST['lname'];
+    $gender = $_POST['gender'];
+    $num = $_POST['number'];
+    $address = $_POST['address'];
+    $gmail = $_POST['mail'];
+    $password = $_POST['pass'];
+
+    if (!empty($gmail) && !empty($password) && !is_numeric($gmail)) {
+        $stmt = $con->prepare("INSERT INTO register (fname, lname, gender, cnum, address, email, pass) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssss", $firstname, $lastname, $gender, $num, $address, $gmail, $password);
+
+        if ($stmt->execute()) {
+            echo "<script type='text/javascript'> alert('Successfully Registered'); </script>";
+        } else {
+            echo "<script type='text/javascript'> alert('Error: " . $stmt->error . "'); </script>";
+        }
+        $stmt->close();
+    } else {
+        echo "<script type='text/javascript'> alert('Please Enter Valid Information'); </script>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AQUILA CORPS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="login_page.css">
     <style>
-        .registration-form {
-            width: 600px;
-            margin: 50px auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
         }
-        .registration-form h2 {
+        .signup {
+            background-color: #283a7a; /* Dark blue */
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        .signup h1 {
             text-align: center;
             margin-bottom: 20px;
-            color: #333;
         }
-        .registration-form input {
+        .signup label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .signup input[type="text"],
+        .signup input[type="password"],
+        .signup input[type="email"],
+        .signup input[type="tel"],
+        .signup input[type="submit"] {
             width: 100%;
             padding: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            color: #333;
-            background-color: #f9f9f9;
         }
-        .registration-form button {
-            width: 100%;
-            padding: 10px;
-            background-color: #283a7a;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .signup input[type="submit"] {
+            background-color: #3053a6;
+            color: #fff;
             cursor: pointer;
+            border: none;
         }
-        .registration-form button:hover {
-            background-color: #1e2d5b;
+        .signup input[type="submit"]:hover {
+            background-color: #d48a1c; /* Darker orange */
         }
-        .alert {
-            margin-bottom: 15px;
+        .signup p {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .signup p a {
+            color: #f5a623;
+            text-decoration: none;
+        }
+        .signup p a:hover {
+            text-decoration: underline;
+        }
+        .background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
+    <div class="signup">
+        <h1>Register</h1>
+        <form method="POST">
+    <label for="firstName">First Name</label>
+    <input type="text" id="firstName" name="fname" required>
+    
+    <label for="lastName">Last Name</label>
+    <input type="text" id="lastName" name="lname" required>
+    
+    <label for="gender">Gender</label>
+    <input type="text" id="gender" name="gender" required>
+    
+    <label for="contact">Contact Number</label>
+    <input type="text" id="contact" name="number" required>
 
-<!-- Video Background -->
-<video autoplay muted loop class="background-video">
-    <source src="bg.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
+    <label for="contact">Address</label>
+    <input type="text" id="contact" name="address" required>
+    
+    <label for="email">Email</label>
+    <input type="email" id="email" name="mail" required>
+    
+    <label for="password">Password</label>
+    <input type="password" id="password" name="pass" required>
+    
+    <input type="submit" value="Submit">
+</form>
+        <p>Already have an account? <a href="login_page.php">Login Here</a></p>
+    </div>
 
-<!-- Registration Form -->
-<div class="registration-form">
-    <h2>Register for AQUILA</h2>
-    <?php
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // Collect form data
-        $fullName = $_POST["fullname"];
-        $email = $_POST["email"];
-        $password = $_POST["password"];
-        $passwordRepeat = $_POST["confirm_password"];
-
-        // Hash the password
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $errors = array();
-
-        // Validation checks
-        if (empty($fullName) || empty($email) || empty($password) || empty($passwordRepeat)) {
-            array_push($errors, "All fields are required.");
-        }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            array_push($errors, "Email is not valid.");
-        }
-        if (strlen($password) < 8) {
-            array_push($errors, "Password must be at least 8 characters long.");
-        }
-        if ($password !== $passwordRepeat) {
-            array_push($errors, "Passwords do not match.");
-        }
-
-        // Display errors or proceed with the registration if no errors
-        if (count($errors) > 0) {
-            foreach ($errors as $error) {
-                echo "<div class='alert alert-danger'>$error</div>";
-            }
-        } else {
-            // Database connection
-            require_once "db_register.php";
-            
-            // Prepare the SQL query
-            $sql = "INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)";
-            $stmt = mysqli_stmt_init($conn);
-            if (mysqli_stmt_prepare($stmt, $sqli)) {
-                // Bind parameters
-                mysqli_stmt_bind_param($stmt, "sss", $fullName, $email, $password_hash);
-
-                // Execute the statement
-                if (mysqli_stmt_execute($stmt)) {
-                    echo "<div class='alert alert-success'>Registration successful! Redirecting...</div>";
-                    header("refresh:2;url=login_page.php"); // Redirect to login page after 2 seconds
-                    exit(); // Ensure no further code is run after the redirect
-                } else {
-                    // Execution error
-                    die("Error: Could not execute the query.");
-                }
-            } else {
-                // Query preparation error
-                die("Error: Could not prepare the SQL statement.");
-            }
-        }
-
-        // Close the statement and connection
-        mysqli_stmt_close($stmt);
-        mysqli_close($conn);
-    }
-    ?>
-    <form action="" method="POST">
-        <input type="text" class="form-control" name="fullname" placeholder="Full Name:" required>
-        <input type="email" class="form-control" name="email" placeholder="Email:" required>
-        <input type="password" class="form-control" name="password" placeholder="Password:" required>
-        <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password:" required>
-        <input type="submit" class="btn btn-primary" value="Register" name="submit">
-    </form>
-</div>
-
+    <!-- Video Background -->
+    <video autoplay muted loop class="background-video">
+        <source src="design/bg.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 </body>
 </html>
